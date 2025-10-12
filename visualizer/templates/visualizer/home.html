@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'visualizer/styles.css' %}">
+    <title>Algorithm Visualizer</title>
+  </head>
+
+  <body>
+    <!-- NAVBAR (belongs in body, not head) -->
+    <div class="flex justify-between items-center bg-blue-500 p-4 text-white">
+      
+      <!-- Use any element to open the sidenav -->
+      <span id="menuButton" onclick="openNav()">Menu</span>
+      
+      <span class="font-bold">Algorithm Visualizer</span>
+
+      <div class="flex items-center gap-3">
+        <label for="myRange" class="font-semibold">Dataset Size:</label>
+        <input type="range" id="myRange" name="myRange" min="1" max="50" value="25" class="w-48">
+        <span id="rangeValue">25</span>
+      </div>
+      
+      <!-- Hamburger Menu-->
+
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#" class="algo-link" data-name="Bubble Sort">Bubble Sort</a>
+        <a href="#" class="algo-link" data-name="Merge Sort">Merge Sort</a>
+        <a href="#" class="algo-link" data-name="Quick Sort">Quick Sort</a>
+      </div>
+
+
+  </div>
+
+    <button id="generateBtn" class="m-4 px-4 py-2 bg-blue-500 text-white rounded">Generate</button>
+    <div id="viz" class="m-4"></div>
+
+    <!-- Scripts at end of body -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="{% static 'visualizer/app.js' %}"></script>
+  </body>
+</html>
