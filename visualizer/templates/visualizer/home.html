@@ -9,7 +9,7 @@
 
   <body>
     <!-- NAVBAR (belongs in body, not head) -->
-    <div class="flex justify-between items-center bg-blue-500 p-4 text-white">
+    <div id=navbar class="flex justify-between items-center bg-blue-500 p-4 text-white">
       
       <!-- Use any element to open the sidenav -->
       <span id="menuButton" onclick="openNav()">Menu</span>
@@ -30,12 +30,13 @@
         <a href="#" class="algo-link" data-name="Merge Sort">Merge Sort</a>
         <a href="#" class="algo-link" data-name="Quick Sort">Quick Sort</a>
       </div>
+    </div>
+    <main id="chartContainer">
+      <button id="playBtn" class="m-4 px-4 py-2 bg-blue-500 text-white rounded">Play</button>
+      <div id="viz" class="m-4"></div>
+    </main>
 
-
-  </div>
-
-    <button id="generateBtn" class="m-4 px-4 py-2 bg-blue-500 text-white rounded">Generate</button>
-    <div id="viz" class="m-4"></div>
+    
 
     <!-- Scripts at end of body -->
     <script src="https://d3js.org/d3.v7.min.js"></script>

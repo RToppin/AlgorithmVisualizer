@@ -1,3 +1,18 @@
+html, body { height: 100%; margin: 0;}
+body        {display: flex;flex-direction: column;}
+
+#chartContainer {
+  flex: 1;          /* fills remaining space */
+  min-height: 0;    /* prevents overflow on small screens */
+  overflow: hidden;
+}
+
+#chartContainer svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
 .sidenav {
     height: 100%;
     width: 0;

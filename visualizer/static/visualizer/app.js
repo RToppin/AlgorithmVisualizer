@@ -1,49 +1,53 @@
 console.log("D3 loaded:", d3);
 
-d3.select("#viz")
-    .append("svg")
-    .attr("width", 400)
-    .attr("hight", 200)
-    .append("circle")
-    .attr("cx", 200)
-    .attr("cy", 100)
-    .attr("r", 40)
-    .attr("fill", "steelblue");
+// STATE
+const state = {
+  selectedAlgo: null,
+  size: null,
+};
 
-console.log("D3 test circle loaded.")
-
-// JS for slider updates
+// ELEMENTS
 const slider = document.getElementById("myRange");
 const output = document.getElementById("rangeValue");
+const menuButton = document.getElementById("menuButton");
+const algoLinks = document.querySelectorAll(".algo-link");
 
+// GUARDS
 if (!slider || !output) {
   console.error("Missing #myRange or #rangeValue", { slider, output });
 } else {
-  output.textContent = slider.value;        // set initial
-  slider.addEventListener("input", () => {  // live updates
+  // init slider UI + state
+  output.textContent = slider.value;
+  state.size = Number(slider.value);
+
+  // live slider updates: update state.size only; keep the same algorithm
+  slider.addEventListener("input", () => {
     output.textContent = slider.value;
+    state.size = Number(slider.value);
+    loadAlgo();
   });
 }
 
-// JS for hamburger menu
+// SIDENAV
 
-function openNav() {
-    document.getElementById("mySidenav").style.width = "250px";
-}
+function openNav() {document.getElementById("mySidenav").style.width = "250px";}
+function closeNav() {document.getElementById("mySidenav").style.width = "0";}
 
-function closeNav() {
-    document.getElementById("mySidenav").style.width = "0";
-}
-
-const menuButton =  document.getElementById("menuButton");
-const algoLinks = document.querySelectorAll(".algo-link");
-
+// ALGORITHM SELECTION
 algoLinks.forEach(link => {
     link.addEventListener("click", (e) => {
         console.log(link.dataset.name, " clicked");
         e.preventDefault();
-        const selectedName = link.dataset.name;
-        menuButton.textContent = selectedName;
+        const name = link.dataset.name;
+        state.selectedAlgo = name;            // Remember Last Clicked
+        if (menuButton) menuButton.textContent = name;
         closeNav();
-    })
+        loadAlgo();
+    });
 });
+
+// LOAD ALGORITHM
+
+function loadAlgo(){
+  //TODO
+}
