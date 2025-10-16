@@ -14,7 +14,7 @@ const lastState = {
 
 // CONSTANTS
 
-const minSize = 1;
+const minSize = 2;
 const maxSize = 50;
 
 // ELEMENTS
@@ -71,9 +71,17 @@ function loadAlgo(){
     
     d3.select("#chartContainer").select("svg").remove(); // clears old SVG
 
-    const width = 800;
-    const height = 400;
-    const sizePercent = (51 - state.size) / maxSize;
+    const { width, height } = document.getElementById("chartContainer").getBoundingClientRect();
+    const numCircles = state.size;
+    const spacing = (width / numCircles) * .6;
+    const radius =(width / numCircles) * .25;
+    const start = -((numCircles - 1) / 2) * spacing;
+
+    const data = Array.from({ length: numCircles }, (_, i) => start + i * spacing);
+
+    const arr = Array.from({ length: numCircles }, () =>
+      Math.floor(Math.random() * 101) - 50
+    );
 
     const svg = d3.select('#chartContainer')  // Select the div to put the canvas in
       .append("svg")                          // Adds an svg element inside of the container
@@ -84,31 +92,30 @@ function loadAlgo(){
       .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-
-      //     (-400, -200)       (0, -200)       (400, -200)
-      //       +-------------------------------+
-      //       |                               |
-      //       |             (0,0)             |
-      //       |                               |
-      //       +-------------------------------+
-      //     (-400, 200)         (0, 200)       (400, 200)
-
-    // Adding circles based on data size
-    const numCircles = state.size;
-    const spacing = 80 * sizePercent;
-    const start = -((numCircles - 1) / 2) * spacing;
-    const data = Array.from({ length: numCircles }, (_, i) => start + i * spacing);
     
+
+    // Circles
     svg.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
       .attr("cx", d => d)
       .attr("cy", 0)
-      .attr("r", 30 * sizePercent)
+      .attr("r", radius)
       .attr("fill", "teal");
+
+    svg.selectAll("text")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("x", d => d)
+      .attr("y", 5)
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .attr("font-size", "12px")
+      .text((d, i) => arr[i]);
     
-    console.log(sizePercent);
+    console.log(radius + " " + spacing);
   }
   
 }
