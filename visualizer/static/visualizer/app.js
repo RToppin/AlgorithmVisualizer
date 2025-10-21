@@ -1,5 +1,8 @@
 console.log("D3 loaded:", d3);
 
+// Declare svg outside to allow multiple function interactions
+ let svg;
+
 // STATE
 const state = {
   selectedAlgo: null,
@@ -19,6 +22,7 @@ const maxSize = 50;
 
 // ELEMENTS
 const slider = document.getElementById("myRange");
+const playBtn = document.getElementById("playBtn")
 const output = document.getElementById("rangeValue");
 const menuButton = document.getElementById("menuButton");
 const algoLinks = document.querySelectorAll(".algo-link");
@@ -57,6 +61,13 @@ algoLinks.forEach(link => {
     });
 });
 
+// PLAY BUTTON
+
+playBtn.addEventListener("click", (e) => {
+  
+  play();
+});
+
 // LOAD ALGORITHM
 
 function loadAlgo(){
@@ -83,7 +94,7 @@ function loadAlgo(){
       Math.floor(Math.random() * 101) - 50
     );
 
-    const svg = d3.select('#chartContainer')  // Select the div to put the canvas in
+    svg = d3.select('#chartContainer')  // Select the div to put the canvas in
       .append("svg")                          // Adds an svg element inside of the container
       .attr("width", width)
       .attr("height", height)
@@ -102,7 +113,8 @@ function loadAlgo(){
       .attr("cx", d => d)
       .attr("cy", 0)
       .attr("r", radius)
-      .attr("fill", "teal");
+      .attr("fill", "teal")
+      .attr("data-value", (d, i) => arr[i]);
 
     svg.selectAll("text")
       .data(data)
@@ -119,4 +131,17 @@ function loadAlgo(){
   }
   
 }
+
+
+
+// PLAY TEST
+
+function play(){
+  console.log("Press btn");
+  const targetVal = 0;
+  svg.selectAll(`circle[data-value="${targetVal}"]`)
+   .attr("fill", "red")
+   .attr("cy", 50);
+}
+
 
