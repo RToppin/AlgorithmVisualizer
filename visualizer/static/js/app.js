@@ -1,7 +1,12 @@
+import { makeBubbleSortEngine } from "./algorithms/bubblesort.js";
+
 console.log("D3 loaded:", d3);
 
 // Declare svg outside to allow multiple function interactions
- let svg;
+let svg;
+let engine;
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 // STATE
 const state = {
@@ -64,7 +69,6 @@ algoLinks.forEach(link => {
 // PLAY BUTTON
 
 playBtn.addEventListener("click", (e) => {
-  
   play();
 });
 
@@ -90,64 +94,94 @@ function loadAlgo(){
 
     const data = Array.from({ length: numCircles }, (_, i) => start + i * spacing);
 
-    const arr = Array.from({ length: numCircles }, () =>
+   // Save the random array to state so Play can use it later
+    state.arr = Array.from({ length: numCircles }, () =>
       Math.floor(Math.random() * 101) - 50
     );
 
-    svg = d3.select('#chartContainer')  // Select the div to put the canvas in
-      .append("svg")                          // Adds an svg element inside of the container
+    // Build (or rebuild) the SVG
+    svg = d3.select('#chartContainer')
+      .append("svg")
       .attr("width", width)
       .attr("height", height)
-
-      // Shift origin to the center of the screen
       .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-    
-
-    // Circles
-    svg.selectAll("circle")
-      .data(data)
-      .enter()
-      .append("circle")
-      .attr("cx", d => d)
-      .attr("cy", 0)
-      .attr("r", radius)
-      .attr("fill", "teal")
-      .attr("data-value", (d, i) => arr[i]);
-
-    const combined = data.map((x, i) => ({ x, value: arr[i] }));
-
-    svg.selectAll("text")
-      .data(combined)
-      .enter()
-      .append("text")
-      .attr("x", d => d.x)
-      .attr("y", 5)
-      .attr("text-anchor", "middle")
-      .attr("fill", "white")
-      .attr("font-size", "12px")
-      .text(d => d.value);
-
-    
-    console.log(radius + " " + spacing);
+    // Initial render of the current data (no engine yet, so j = -1 to highlight none)
+    render({ a: state.arr, j: -1 });
   }
-  
+}
+
+// Layout Management
+function computeLayout(n) {
+  const { width } = document.getElementById("chartContainer").getBoundingClientRect();
+  const spacing = (width / n) * 0.6;
+  const radius  = (width / n) * 0.25;
+  const startX  = -((n - 1) / 2) * spacing;
+  return { spacing, radius, startX };
+}
+
+// RENDERER
+function render(state){
+  const {a, j} = state;
+  const {spacing, radius, startX} = computeLayout(a.length);
+
+  svg.selectAll("circle")
+    .data(a, (_, idx) => idx)
+    .join(
+      enter => enter.append("circle")
+        .attr("cy", 0)
+        .attr("r", radius)
+        .attr("cx", (_, idx) => startX + idx * spacing),
+      update => update
+        .attr("r", radius)
+        .attr("cx", (_, idx) => startX + idx * spacing),
+      exit => exit.remove()
+    )
+    .attr("fill", (_, idx) => (idx === j || idx === j + 1) ? "orange" : "teal");
+
+  svg.selectAll("text")
+    .data(a, (_, idx) => idx)
+    .join(
+        enter => enter.append("text")
+          .attr("y", 26)
+          .attr("text-anchor", "middle")
+          .attr("font-size", "12px")
+          .attr("x", (_, idx) => startX + idx * spacing),
+          update => update
+            .attr("x", ( _, idx) => startX + idx * spacing),
+          exit => exit.remove()
+    )
+    .text(d => d);
 }
 
 
 
 // PLAY TEST
 
-function play(){
-  console.log("Press btn");
-  const targetVal = 0;
-  svg.selectAll(`circle[data-value="${targetVal}"]`)
-   .attr("fill", "red")
-   .attr("cy", 50);
-  svg.selectAll("text")
-  .filter(d => d.value === targetVal)
-  .attr("y", 55);
+async function play(){
+  // create the engine on click (or recreate to restart)
+  engine = makeBubbleSortEngine();
+  engine.init({ array: state.arr });       // use the array created in loadAlgo()
+
+  // optional: render the starting frame
+  render(engine.getState());
+
+  // animate until done
+  while (!engine.isDone()) {
+    engine.step();
+    render(engine.getState());
+    await sleep(40);
+  }
 }
+
+window.addEventListener("resize", () => {
+  // Guard: engine may not exist yet (before first play)
+  const a = engine ? engine.getState().a : (state.arr || []);
+  if (!svg || !a.length) return;
+  render({ a, j: engine ? engine.getState().j : -1 });
+});
+
+
 
 

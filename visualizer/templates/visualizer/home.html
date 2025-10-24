@@ -3,7 +3,7 @@
   <head>
     {% load static %}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'visualizer/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <title>Algorithm Visualizer</title>
   </head>
 
@@ -40,6 +40,6 @@
 
     <!-- Scripts at end of body -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="{% static 'visualizer/app.js' %}"></script>
+    <script type = "module", src="{% static 'js/app.js' %}"></script>
   </body>
 </html>
