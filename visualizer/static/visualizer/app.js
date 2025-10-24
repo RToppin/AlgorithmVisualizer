@@ -116,16 +116,19 @@ function loadAlgo(){
       .attr("fill", "teal")
       .attr("data-value", (d, i) => arr[i]);
 
+    const combined = data.map((x, i) => ({ x, value: arr[i] }));
+
     svg.selectAll("text")
-      .data(data)
+      .data(combined)
       .enter()
       .append("text")
-      .attr("x", d => d)
+      .attr("x", d => d.x)
       .attr("y", 5)
       .attr("text-anchor", "middle")
       .attr("fill", "white")
       .attr("font-size", "12px")
-      .text((d, i) => arr[i]);
+      .text(d => d.value);
+
     
     console.log(radius + " " + spacing);
   }
@@ -142,6 +145,9 @@ function play(){
   svg.selectAll(`circle[data-value="${targetVal}"]`)
    .attr("fill", "red")
    .attr("cy", 50);
+  svg.selectAll("text")
+  .filter(d => d.value === targetVal)
+  .attr("y", 55);
 }
 
 
