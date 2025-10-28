@@ -10,9 +10,13 @@ export function makeBubbleSortEngine(){
     }
 
     function step(){
+        console.log("Steping #" + j);
         if (done) return; // Stop if finished
 
-        if (a[j] > a [j + 1]){ [a[j], a[j + 1] =  a[j + 1], a[j] ], j++;}
+        if (a[j] > a [j + 1]){ 
+            [a[j], a[j + 1]] =  [a[j + 1], a[j]];
+        }
+        j++;
 
         if (j >= a.length - i - 1){ j = 0; i++;}                // Next outer pass
 

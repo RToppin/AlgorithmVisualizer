@@ -1,6 +1,5 @@
 import { makeBubbleSortEngine } from "./algorithms/bubblesort.js";
-
-console.log("D3 loaded:", d3);
+import { openNav, closeNav } from "./components.js";
 
 // Declare svg outside to allow multiple function interactions
 let svg;
@@ -12,6 +11,7 @@ function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 const state = {
   selectedAlgo: null,
   size: null,
+  isRunning: false,
 };
 
 // LAST STATE
@@ -48,10 +48,17 @@ if (!slider || !output) {
   });
 }
 
-// SIDENAV
+// MENU BTN
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("menuBtn");
+  if (btn) btn.addEventListener("click", openNav);
+})
 
-function openNav() {document.getElementById("mySidenav").style.width = "250px";}
-function closeNav() {document.getElementById("mySidenav").style.width = "0";}
+// CLOSE BTN
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("closeBtn");
+  if (btn) btn.addEventListener("click", openNav);
+})
 
 // ALGORITHM SELECTION
 algoLinks.forEach(link => {
@@ -67,13 +74,78 @@ algoLinks.forEach(link => {
 });
 
 // PLAY BUTTON
-
-playBtn.addEventListener("click", (e) => {
-  play();
+playBtn.addEventListener("click", async (e) => {
+  // Start running d3
+  if(!state.isRunning) {
+    // Initializing animation
+    const ready = await initAnimation();
+    if (ready){
+      state.isRunning = true;
+      playBtn.textContent = "⏹ Stop";
+      playBtn.style.backgroundColor = "red";
+      // Stepping through
+      play();
+    }
+  } else {
+    // Stop running d3
+    state.isRunning = false;
+    playBtn.textContent = "▶️ Play";
+    playBtn.style.backgroundColor = "green";
+    }
 });
 
-// LOAD ALGORITHM
+// Initialize Animation
+async function initAnimation(){
+  // create the engine on click (or recreate to restart)
+  switch (state.selectedAlgo) {
+    case "Bubble Sort":
+      console.log("Creating Bubble Sort Engine");
+      engine = makeBubbleSortEngine();
+      break;
+    
+    case "Bubble Sort":
+      console.log("Creating Merge Sort Engine");
+      //engine = makeBubbleSortEngine();
+      break;
 
+    case "Bubble Sort":
+      console.log("Creating Quick Sort Engine");
+      //engine = makeBubbleSortEngine();
+      break;
+
+    case "Bubble Sort":
+      console.log("Creating No Sort Engine");
+      //engine = makeBubbleSortEngine();
+      break;
+
+    default:
+      console.log("No algortihm selected.");
+      break;
+  }
+  if (engine){
+    return true;
+  } else {
+    alert("Error: Invalid input. Please try again.");
+    return false;
+  }
+}
+
+// PLAY Animation
+async function play(){
+  engine.init({ array: state.arr });   // use the array created in loadAlgo()
+
+  // optional: render the starting frame
+  render(engine.getState());
+
+  // animate until done
+  while (!engine.isDone() && state.isRunning) {
+    engine.step();
+    render(engine.getState());
+    await sleep(1000);
+  }
+}
+
+// LOAD ALGORITHM
 function loadAlgo(){
   if (state.selectedAlgo == lastState.prevSelectedAlgo && state.size == lastState.prevSize){
     console.log("No Change Detected")
@@ -155,33 +227,9 @@ function render(state){
     .text(d => d);
 }
 
-
-
-// PLAY TEST
-
-async function play(){
-  // create the engine on click (or recreate to restart)
-  engine = makeBubbleSortEngine();
-  engine.init({ array: state.arr });       // use the array created in loadAlgo()
-
-  // optional: render the starting frame
-  render(engine.getState());
-
-  // animate until done
-  while (!engine.isDone()) {
-    engine.step();
-    render(engine.getState());
-    await sleep(40);
-  }
-}
-
 window.addEventListener("resize", () => {
   // Guard: engine may not exist yet (before first play)
   const a = engine ? engine.getState().a : (state.arr || []);
   if (!svg || !a.length) return;
   render({ a, j: engine ? engine.getState().j : -1 });
 });
-
-
-
-
