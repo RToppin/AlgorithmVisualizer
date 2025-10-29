@@ -75,9 +75,10 @@ algoLinks.forEach(link => {
 
 // PLAY BUTTON
 playBtn.addEventListener("click", async (e) => {
+  playBtn.disabled = true;
   // Start running d3
   if(!state.isRunning) {
-    // Initializing animation
+    // Initializing animation    
     const ready = await initAnimation();
     if (ready){
       state.isRunning = true;
@@ -91,11 +92,14 @@ playBtn.addEventListener("click", async (e) => {
     state.isRunning = false;
     playBtn.textContent = "▶️ Play";
     playBtn.style.backgroundColor = "green";
-    }
+  }
+  playBtn.disabled = false;
 });
 
 // Initialize Animation
 async function initAnimation(){
+  // Set engine to null to remove previously selected engines from memory
+  engine = null;
   // create the engine on click (or recreate to restart)
   switch (state.selectedAlgo) {
     case "Bubble Sort":
