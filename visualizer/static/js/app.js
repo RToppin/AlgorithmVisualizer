@@ -1,4 +1,5 @@
 import { makeBubbleSortEngine } from "./algorithms/bubblesort.js";
+import { makeMergeSortEngine } from "./algorithms/mergesort.js";
 import { openNav, closeNav } from "./components.js";
 
 // Declare svg outside to allow multiple function interactions
@@ -29,7 +30,7 @@ const maxSize = 50;
 const slider = document.getElementById("myRange");
 const playBtn = document.getElementById("playBtn")
 const output = document.getElementById("rangeValue");
-const menuButton = document.getElementById("menuButton");
+const menuBtn = document.getElementById("menuBtn");
 const algoLinks = document.querySelectorAll(".algo-link");
 
 // GUARDS
@@ -57,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // CLOSE BTN
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("closeBtn");
-  if (btn) btn.addEventListener("click", openNav);
+  if (btn) btn.addEventListener("click", closeNav);
 })
 
 // ALGORITHM SELECTION
@@ -67,7 +68,7 @@ algoLinks.forEach(link => {
         e.preventDefault();
         const name = link.dataset.name;
         state.selectedAlgo = name;            // Remember Last Clicked
-        if (menuButton) menuButton.textContent = name;
+        if (menuBtn) menuBtn.textContent = name;
         closeNav();
         loadAlgo();
     });
@@ -102,29 +103,10 @@ async function initAnimation(){
   engine = null;
   // create the engine on click (or recreate to restart)
   switch (state.selectedAlgo) {
-    case "Bubble Sort":
-      console.log("Creating Bubble Sort Engine");
-      engine = makeBubbleSortEngine();
-      break;
-    
-    case "Bubble Sort":
-      console.log("Creating Merge Sort Engine");
-      //engine = makeBubbleSortEngine();
-      break;
-
-    case "Bubble Sort":
-      console.log("Creating Quick Sort Engine");
-      //engine = makeBubbleSortEngine();
-      break;
-
-    case "Bubble Sort":
-      console.log("Creating No Sort Engine");
-      //engine = makeBubbleSortEngine();
-      break;
-
-    default:
-      console.log("No algortihm selected.");
-      break;
+    case "Bubble Sort": engine = makeBubbleSortEngine(); break;
+    case "Merge Sort":  engine = makeMergeSortEngine();  break;
+    // add Quick/None later or remove for now
+    default: console.log("No algorithm selected."); break;
   }
   if (engine){
     return true;
@@ -145,8 +127,9 @@ async function play(){
   while (!engine.isDone() && state.isRunning) {
     engine.step();
     render(engine.getState());
-    await sleep(1000);
+    await sleep(40);
   }
+  console.log(state.selectedAlgo, " is done or has been stopped")
 }
 
 // LOAD ALGORITHM
@@ -163,15 +146,9 @@ function loadAlgo(){
     d3.select("#chartContainer").select("svg").remove(); // clears old SVG
 
     const { width, height } = document.getElementById("chartContainer").getBoundingClientRect();
-    const numCircles = state.size;
-    const spacing = (width / numCircles) * .6;
-    const radius =(width / numCircles) * .25;
-    const start = -((numCircles - 1) / 2) * spacing;
-
-    const data = Array.from({ length: numCircles }, (_, i) => start + i * spacing);
 
    // Save the random array to state so Play can use it later
-    state.arr = Array.from({ length: numCircles }, () =>
+    state.arr = Array.from({ length: state.size }, () =>
       Math.floor(Math.random() * 101) - 50
     );
 
@@ -184,56 +161,85 @@ function loadAlgo(){
       .attr("preserveAspectRatio", "xMidYMid meet");
 
     // Initial render of the current data (no engine yet, so j = -1 to highlight none)
-    render({ a: state.arr, j: -1 });
+    render({ a: state.arr, j: -2 });
   }
-}
-
-// Layout Management
-function computeLayout(n) {
-  const { width } = document.getElementById("chartContainer").getBoundingClientRect();
-  const spacing = (width / n) * 0.6;
-  const radius  = (width / n) * 0.25;
-  const startX  = -((n - 1) / 2) * spacing;
-  return { spacing, radius, startX };
 }
 
 // RENDERER
 function render(state){
-  const {a, j} = state;
-  const {spacing, radius, startX} = computeLayout(a.length);
+  const {a, j, i, mid, hi, type} = state;
+  console.log(state);
+  const n = a.length;
+  const spacing = 30;
+  const radius = 10;
+  const startX  = -((n - 1) / 2) * spacing;
+  const y0 = 0;           // center line
+  const delta = 6;        // 5–10 px gap above/below center
+  const h = d => Math.abs(d);
+  const yTop = d => d >= 0 ? (y0 - delta - h(d)) : (y0 + delta);
+  
+  let highlights = (_, idx) => (idx === j || idx === j + 1 ? "orange" : "teal");
+  let heightScale = 1;
 
-  svg.selectAll("circle")
+  // SWITCH SELECTION
+
+  switch(state.type){
+    case "split":
+      // Highlight current split range and lower height a bit
+      highlights = (_, idx) =>
+        idx >= state.lo && idx < state.hi
+          ? "rgb(100,150,255)" // active split band
+          : "teal";
+      heightScale = 0.5; // drop split bars
+      break;
+    case "merge":
+        // Highlight active merge indices
+      highlights = (_, idx) =>
+        idx === state.i
+          ? "orange"
+          : idx === state.j
+          ? "yellow"
+          : idx === state.k
+          ? "red"
+          : "teal";
+      heightScale = 1.0; // raised back up
+      break;
+    default:
+      // Bubble sort case
+      highlights = (_, idx) =>
+        idx === state.j || idx === state.j + 1 ? "orange" : "teal";
+      heightScale = 1.0;
+      break;
+  }
+
+  svg.selectAll("rect")
     .data(a, (_, idx) => idx)
     .join(
-      enter => enter.append("circle")
-        .attr("cy", 0)
-        .attr("r", radius)
-        .attr("cx", (_, idx) => startX + idx * spacing),
+      enter => enter.append("rect") 
+        .attr("x", (_, idx) => startX + idx * spacing - radius)
+        .attr("width", radius * 2)
+        .attr("y", d => yTop(d))
+        .attr("height", d => h(d)),
       update => update
-        .attr("r", radius)
-        .attr("cx", (_, idx) => startX + idx * spacing),
+        .attr("x", (_, idx) => startX + idx * spacing - radius)
+        .attr("width", radius * 2)
+        .attr("y", d => yTop(d))
+        .attr("height", d => h(d)),
       exit => exit.remove()
     )
-    .attr("fill", (_, idx) => (idx === j || idx === j + 1) ? "orange" : "teal");
+    .attr("fill", highlights);
 
-  svg.selectAll("text")
-    .data(a, (_, idx) => idx)
-    .join(
-        enter => enter.append("text")
-          .attr("y", 26)
-          .attr("text-anchor", "middle")
-          .attr("font-size", "12px")
-          .attr("x", (_, idx) => startX + idx * spacing),
-          update => update
-            .attr("x", ( _, idx) => startX + idx * spacing),
-          exit => exit.remove()
-    )
-    .text(d => d);
+  // svg.selectAll("text")
+  //   .data(a, (_, idx) => idx)
+  //   .join(
+  //       enter => enter.append("text")
+  //         .attr("y", -5)
+  //         .attr("text-anchor", "middle")
+  //         .attr("font-size", "12px")
+  //           .attr("x", (_, idx) => startX + idx * spacing - radius/2),
+  //         update => update
+  //           .attr("x", (_, idx) => startX + idx * spacing - radius/2),
+  //         exit => exit.remove()
+  //   )
+  //   .text(d => d);
 }
-
-window.addEventListener("resize", () => {
-  // Guard: engine may not exist yet (before first play)
-  const a = engine ? engine.getState().a : (state.arr || []);
-  if (!svg || !a.length) return;
-  render({ a, j: engine ? engine.getState().j : -1 });
-});

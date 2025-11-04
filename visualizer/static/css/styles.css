@@ -34,13 +34,19 @@ body        {display: flex;flex-direction: column;}
     display: block;
 }
 
-.sidenav a:hover {
+.sidenav a:hover, 
+.sidenav .closeBtn:hover{
     color:rgb(178, 229, 27);
 }
 
-.sidenav .closebtn {
+.sidenav .closeBtn {
     position:absolute;
-    top: 0;
+    top: 20px;
     right: 25px;
-
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: rgb(182, 36, 244);
+    cursor: pointer;
 }
+
