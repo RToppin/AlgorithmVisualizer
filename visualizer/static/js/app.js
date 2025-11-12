@@ -1,5 +1,6 @@
 import { makeBubbleSortEngine } from "./algorithms/bubblesort.js";
 import { makeMergeSortEngine } from "./algorithms/mergesort.js";
+import { makeQuickSortEngine } from "./algorithms/quicksort.js";
 import { openNav, closeNav } from "./components.js";
 
 // Declare svg outside to allow multiple function interactions
@@ -105,7 +106,7 @@ async function initAnimation(){
   switch (state.selectedAlgo) {
     case "Bubble Sort": engine = makeBubbleSortEngine(); break;
     case "Merge Sort":  engine = makeMergeSortEngine();  break;
-    // add Quick/None later or remove for now
+    case "Quick Sort": engine = makeQuickSortEngine(); break;
     default: console.log("No algorithm selected."); break;
   }
   if (engine){
@@ -127,9 +128,9 @@ async function play(){
   while (!engine.isDone() && state.isRunning) {
     engine.step();
     render(engine.getState());
-    await sleep(40);
+    await sleep(1000);
   }
-  console.log(state.selectedAlgo, " is done or has been stopped")
+  console.log(state.selectedAlgo, "is done or has been stopped")
 }
 
 // LOAD ALGORITHM
@@ -167,8 +168,14 @@ function loadAlgo(){
 
 // RENDERER
 function render(state){
-  const {a, j, i, mid, hi, type} = state;
-  console.log(state);
+
+  // Getstate()
+  const {
+    a, type, phase,
+    lo, mid, hi,
+    i, j,
+  } = state;
+
   const n = a.length;
   const spacing = 30;
   const radius = 10;
@@ -185,24 +192,22 @@ function render(state){
 
   switch(state.type){
     case "split":
-      // Highlight current split range and lower height a bit
+      // Highlight current split range left side
       highlights = (_, idx) =>
-        idx >= state.lo && idx < state.hi
-          ? "rgb(100,150,255)" // active split band
+        idx >= lo && idx < hi
+          ? "rgb(51, 185, 37)" // active split band
           : "teal";
-      heightScale = 0.5; // drop split bars
+          console.log("Range: " + lo + ", " + hi);
       break;
     case "merge":
-        // Highlight active merge indices
-      highlights = (_, idx) =>
-        idx === state.i
-          ? "orange"
-          : idx === state.j
-          ? "yellow"
-          : idx === state.k
-          ? "red"
-          : "teal";
-      heightScale = 1.0; // raised back up
+      highlights = (_, idx) => {
+        //const inMergeRange = idx >= lo && idx < hi;
+        const isPointer = idx === i || idx === j;   // both pointers same color
+
+        if (isPointer) return "orange";             // active comparison
+        //if (inMergeRange) return "purple";          // entire merge segment
+        return "teal";                              // inactive bars
+      };
       break;
     default:
       // Bubble sort case
@@ -228,18 +233,4 @@ function render(state){
       exit => exit.remove()
     )
     .attr("fill", highlights);
-
-  // svg.selectAll("text")
-  //   .data(a, (_, idx) => idx)
-  //   .join(
-  //       enter => enter.append("text")
-  //         .attr("y", -5)
-  //         .attr("text-anchor", "middle")
-  //         .attr("font-size", "12px")
-  //           .attr("x", (_, idx) => startX + idx * spacing - radius/2),
-  //         update => update
-  //           .attr("x", (_, idx) => startX + idx * spacing - radius/2),
-  //         exit => exit.remove()
-  //   )
-  //   .text(d => d);
 }

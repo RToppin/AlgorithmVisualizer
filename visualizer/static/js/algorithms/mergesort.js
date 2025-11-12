@@ -9,6 +9,7 @@ export function makeMergeSortEngine() {
 
     // Frame shapes:
     // { type:'split', lo, hi }
+    // { type: 'merge', lo, mid, hi, i, j, k, phase }
 
     function init({ array }) {
         a = array.slice();
@@ -80,15 +81,28 @@ export function makeMergeSortEngine() {
     // Expose useful state for a visualizer
     function getState() {
         const top = stack[stack.length - 1] || null;
+
         return {
-        a: a.slice(),   // Array slice
-        i: top.i,
-        mid: top.mid,
-        j: top.j,
-        hi: top.hi,
-        type: top.type,
+            a: a.slice(),
+            type:  top?.type ?? null,
+            phase: top?.phase ?? null,
+
+            // ranges
+            lo:  top?.lo  ?? -1,
+            mid: top?.mid ?? -1,
+            hi:  top?.hi  ?? -1,
+
+            // merge heads
+            i: top?.i ?? -1,
+            j: top?.j ?? -1,
+
+            // (optional) internal cursors for debugging
+            // k: top?.k ?? -1,
+            // c: top?.c ?? -1,
+
+            done,
         };
-    }
+        }
     return { init, step, isDone, getState };
 }
 

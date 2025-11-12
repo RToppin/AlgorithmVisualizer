@@ -30,7 +30,8 @@ body        {display: flex;flex-direction: column;}
     padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 25px;
-    color: rgb(182, 36, 244);
+    font-style: bold;
+    color: rgb(255, 255, 255);
     display: block;
 }
 
@@ -46,7 +47,7 @@ body        {display: flex;flex-direction: column;}
     font-size: 30px;
     background: none;
     border: none;
-    color: rgb(182, 36, 244);
+    color: rgb(255, 255, 255);
     cursor: pointer;
 }
 
