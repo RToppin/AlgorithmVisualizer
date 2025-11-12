@@ -25,16 +25,18 @@ export function makeQuickSortEngine() {
         // Peek the top frame
         const f = stack[stack.length - 1];
 
-        if(debug){
-            console.log(
-                "Type: " + f.type + "\n" +
-                "I: " + f.i + "\n" +
-                "J: " + f.j + "\n" +
-                "Pivot Value: " + f.pivotValue + "\n" +
-                "Array: " + a + "\n"
-            );
+        function consoleDebug(){
+            if(debug){
+                console.log(
+                    "Type: " + f.type + "\n" +
+                    "I: " + f.i + "\n" +
+                    "J: " + f.j + "\n" +
+                    "Pivot Value: " + f.pivotValue + "\n" +
+                    "Array: " + a + "\n"
+                );
+            }
         }
-
+        
         if(f.type === 'pivot'){
 
             const { lo, hi } = f;
@@ -50,6 +52,7 @@ export function makeQuickSortEngine() {
                 i: lo,              // left scan pointer
                 j: hi               // right scan pointer (scanRight will update this)
             });
+            consoleDebug();
             return;
         }
 
@@ -58,6 +61,7 @@ export function makeQuickSortEngine() {
             while (i <= f.hi && a[i] < f.pivotValue) i++;
             stack.pop();
             stack.push({ type: 'scanRight', lo: f.lo, hi: f.hi, pvt: f.pvt, pivotValue: f.pivotValue, i, j: f.j });
+            consoleDebug();
             return;
         }
 
@@ -74,6 +78,7 @@ export function makeQuickSortEngine() {
                 if (f.lo < j) stack.push({ type: 'pivot', lo: f.lo, hi: j });
                 if (i < f.hi) stack.push({ type: 'pivot', lo: i,     hi: f.hi });
             }
+            consoleDebug();
             return;
         }
 
@@ -87,6 +92,7 @@ export function makeQuickSortEngine() {
                 i: f.i + 1,         // moved past the swapped-in value
                 j: f.j - 1
             });
+            consoleDebug();
             return;
         }
     }
@@ -111,6 +117,8 @@ export function makeQuickSortEngine() {
             // merge heads
             i: top?.i ?? -1,
             j: top?.j ?? -1,
+
+            pvt: top?.pvt ?? -1,
 
             // (optional) internal cursors for debugging
             // k: top?.k ?? -1,

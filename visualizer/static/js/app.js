@@ -130,7 +130,7 @@ async function play(){
     render(engine.getState());
     await sleep(1000);
   }
-  console.log(state.selectedAlgo, "is done or has been stopped")
+  console.log(state.selectedAlgo, " is done or has been stopped")
 }
 
 // LOAD ALGORITHM
@@ -171,9 +171,10 @@ function render(state){
 
   // Getstate()
   const {
-    a, type, phase,
-    lo, mid, hi,
+    a,
+    lo, hi,
     i, j,
+    pvt,
   } = state;
 
   const n = a.length;
@@ -205,10 +206,18 @@ function render(state){
         const isPointer = idx === i || idx === j;   // both pointers same color
 
         if (isPointer) return "orange";             // active comparison
-        //if (inMergeRange) return "purple";          // entire merge segment
-        return "teal";                              // inactive bars
+        return "teal";
       };
-      break;
+    break;
+
+    case "pivot":
+      highlights = (_, idx) => {
+        const pivot = pvt;
+
+        if (pivot) return "purple";             // active pivot
+        return "teal";
+      };
+    break;
     default:
       // Bubble sort case
       highlights = (_, idx) =>
