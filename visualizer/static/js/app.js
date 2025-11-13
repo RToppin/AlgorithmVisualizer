@@ -171,7 +171,7 @@ function render(state){
 
   // Getstate()
   const {
-    a,
+    a, type,
     lo, hi,
     i, j,
     pvt,
@@ -212,9 +212,37 @@ function render(state){
 
     case "pivot":
       highlights = (_, idx) => {
-        const pivot = pvt;
+        const pivot = state.pvt;
 
         if (pivot) return "purple";             // active pivot
+        return "teal";
+      };
+    break;
+
+    case "scanLeft":
+      highlights = (_, idx) => {
+        const ptrLeft = state.i;
+
+        if (ptrLeft) return "green";             // active pivot
+        return "teal";
+      };
+    break;
+
+    case "scanRight ":
+      highlights = (_, idx) => {
+        const ptrRight = state.j;
+
+        if (ptrRight) return "green";             // active pivot
+        return "teal";
+      };
+    break;
+
+    case "swap":
+      highlights = (_, idx) => {
+        const i = state.i;
+        const j = state.j;
+
+        if (pivot) return "orange";             // active pivot
         return "teal";
       };
     break;

@@ -96,6 +96,8 @@ export function makeMergeSortEngine() {
             i: top?.i ?? -1,
             j: top?.j ?? -1,
 
+            pvt: top?.pvt ?? -1,
+
             // (optional) internal cursors for debugging
             // k: top?.k ?? -1,
             // c: top?.c ?? -1,
