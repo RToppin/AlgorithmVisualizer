@@ -14,8 +14,9 @@ export function makeQuickSortEngine() {
     function init({ array }) {
         a = array.slice();
         const lo = 0, hi = a.length - 1;
-        stack = [{ type: 'pivot', lo, hi }];
-        done = false;
+        stack = [];
+        if (hi >= lo) stack.push({ type: 'pivot', lo, hi });
+        done = a.length <= 1;
     }
 
     function step() {
@@ -40,11 +41,10 @@ export function makeQuickSortEngine() {
         if(f.type === 'pivot'){
 
             const { lo, hi } = f;
-            // choose a pivot index inside [lo, hi]
+            stack.pop();
             const pvt = lo + ((hi - lo) >> 1);
             const pivotValue = a[pvt];
 
-            // begin partition; carry everything you need forward
             stack.push({
                 type: 'scanLeft',
                 lo, hi, pvt, pivotValue,
@@ -98,31 +98,36 @@ export function makeQuickSortEngine() {
 
 
     function isDone() {
-    // return true when there are no more steps
+        return done;
     }
 
     function getState() {
         const top = stack[stack.length - 1] || null;
 
+        // Defaults
+        let lo  = top?.lo  ?? -1;
+        let hi  = top?.hi  ?? -1;
+        let i   = top?.i   ?? -1;
+        let j   = top?.j   ?? -1;
+        let pvt = top?.pvt ?? -1;
+        const type = top?.type ?? null;
+
+        // If we're on a pivot frame, we still want to SEE pivot + pointers.
+        // Derive the pivot from [lo, hi] if it's not present yet.
+        const haveRange = Number.isInteger(lo) && Number.isInteger(hi) && lo >= 0 && hi >= lo;
+        if (type === 'pivot' && haveRange) {
+            if (!Number.isInteger(pvt) || pvt < lo || pvt > hi) {
+            pvt = lo + ((hi - lo) >> 1);
+            }
+            // For visuals: show i/j spanning the active range on pivot frames.
+            if (!Number.isInteger(i) || i < lo || i > hi) i = lo;
+            if (!Number.isInteger(j) || j < lo || j > hi) j = hi;
+        }
+
         return {
             a: a.slice(),
-            type:  top?.type ?? null,
-
-            // ranges
-            lo:  top?.lo  ?? -1,
-            mid: top?.mid ?? -1,
-            hi:  top?.hi  ?? -1,
-
-            // merge heads
-            i: top?.i ?? -1,
-            j: top?.j ?? -1,
-
-            pvt: top?.pvt ?? -1,
-
-            // (optional) internal cursors for debugging
-            // k: top?.k ?? -1,
-            // c: top?.c ?? -1,
-
+            type,
+            lo, hi, i, j, pvt,
             done,
         };
     }

@@ -80,7 +80,7 @@ playBtn.addEventListener("click", async (e) => {
   playBtn.disabled = true;
   // Start running d3
   if(!state.isRunning) {
-    // Initializing animation    
+    // Initializing animation
     const ready = await initAnimation();
     if (ready){
       state.isRunning = true;
@@ -162,21 +162,27 @@ function loadAlgo(){
       .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-    // Initial render of the current data (no engine yet, so j = -1 to highlight none)
-    render({ a: state.arr, j: -2 });
+    // Initial render (no engine yet)
+    render({
+      a: state.arr,
+      type: "idle",
+      lo: -1,
+      hi: -1,
+      i: -1,
+      j: -1,
+      pvt: -1,
+    });
   }
 }
 
 // RENDERER
-function render(state){
-
-  // Getstate()
+function render(frame) {
   const {
     a, type,
     lo, hi,
     i, j,
     pvt,
-  } = state;
+  } = frame;
 
   const n = a.length;
   const spacing = 30;
@@ -186,74 +192,122 @@ function render(state){
   const delta = 6;        // 5–10 px gap above/below center
   const h = d => Math.abs(d);
   const yTop = d => d >= 0 ? (y0 - delta - h(d)) : (y0 + delta);
-  
-  let highlights = (_, idx) => (idx === j || idx === j + 1 ? "orange" : "teal");
-  let heightScale = 1;
 
-  // SWITCH SELECTION
+  // base/high-level highlights (per algorithm)
+  let highlights = (_, idx) => (idx === frame.j || idx === frame.j + 1 ? "orange" : "teal");
 
-  switch(state.type){
+  // --- EXISTING PER-ALGO LOGIC ---
+
+  switch (type) {
     case "split":
-      // Highlight current split range left side
+      // Merge sort split: highlight current split range
       highlights = (_, idx) =>
         idx >= lo && idx < hi
           ? "rgb(51, 185, 37)" // active split band
           : "teal";
-          console.log("Range: " + lo + ", " + hi);
       break;
-    case "merge":
-      highlights = (_, idx) => {
-        //const inMergeRange = idx >= lo && idx < hi;
-        const isPointer = idx === i || idx === j;   // both pointers same color
 
-        if (isPointer) return "orange";             // active comparison
+    case "merge":
+      // Merge sort merge: highlight active comparison pair
+      highlights = (_, idx) => {
+        const isPointer = idx === i || idx === j;
+        if (isPointer) return "orange";
         return "teal";
       };
-    break;
+      break;
 
     case "pivot":
+      // Quick sort: pivot frame (we’ll override more below)
       highlights = (_, idx) => {
-
-        if (idx === pvt) return "purple";             // active pivot
+        if (idx === pvt) return "purple";
         return "teal";
       };
-    break;
+      break;
 
     case "scanLeft":
       highlights = (_, idx) => {
-
-        if (idx === i) return "green";             // active pivot
+        if (idx === i) return "red";
         return "teal";
       };
-    break;
+      break;
 
-    case "scanRight ":
+    case "scanRight":
       highlights = (_, idx) => {
-
-        if (idk === j) return "green";             // active pivot
+        if (idx === i) return "red";
+        if (idx === j) return "green";
         return "teal";
       };
-    break;
+      break;
 
     case "swap":
       highlights = (_, idx) => {
-
-        if (idx === (i || j)) return "orange";             // active pivot
+        if (idx === i || idx === j) return "orange";
         return "teal";
       };
-    break;
+      break;
+
     default:
-      // Bubble sort case
+      // Bubble sort case (or idle)
       highlights = (_, idx) =>
-        idx === state.j || idx === state.j + 1 ? "orange" : "teal";
-      heightScale = 1.0;
+        idx === frame.j || idx === frame.j + 1 ? "orange" : "teal";
       break;
   }
+
+  // --- QUICK SORT OVERLAY: RANGE + POINTERS + PIVOT ---
+
+  const BLUE   = "rgb(160, 200, 255)"; // active range (lo–hi)
+  const RED    = "red";                // left pointer i
+  const GREEN  = "green";              // right pointer j
+  const ORANGE = "orange";             // swap pointers
+  const PURPLE = "purple";             // pivot
+  const isQuickFrame =
+    type === "pivot" ||
+    type === "scanLeft" ||
+    type === "scanRight" ||
+    type === "swap";
+
+  if (isQuickFrame) {
+    const inBounds =
+      Number.isInteger(lo) && Number.isInteger(hi) &&
+      lo >= 0 && hi >= 0 && lo <= hi;
+
+    const baseHighlights = highlights; // preserve per-case colors
+
+    highlights = (_, idx) => {
+      let color = baseHighlights(_, idx);
+
+      // 1) active quicksort range
+      if (inBounds && idx >= lo && idx <= hi) {
+        color = BLUE;
+      }
+
+      // 2) pointers (override range)
+      if (idx === i || idx === j) {
+        if (type === "swap") {
+          // during swap both pointers are orange
+          color = ORANGE;
+        } else if (idx === i) {
+          color = RED;
+        } else if (idx === j) {
+          color = GREEN;
+        }
+      }
+
+      // 3) pivot (final override)
+      if (Number.isInteger(pvt) && pvt >= 0 && idx === pvt) {
+        color = PURPLE;
+      }
+
+      return color;
+    };
+  }
+
+  // --- D3 RENDER ---
 
   svg.selectAll("rect")
     .data(a, (_, idx) => idx)
     .join(
-      enter => enter.append("rect") 
+      enter => enter.append("rect")
         .attr("x", (_, idx) => startX + idx * spacing - radius)
         .attr("width", radius * 2)
         .attr("y", d => yTop(d))
