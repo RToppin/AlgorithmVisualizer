@@ -40,7 +40,6 @@ export function makeQuickSortEngine() {
         if(f.type === 'pivot'){
 
             const { lo, hi } = f;
-            stack.pop();
             // choose a pivot index inside [lo, hi]
             const pvt = lo + ((hi - lo) >> 1);
             const pivotValue = a[pvt];
@@ -52,7 +51,7 @@ export function makeQuickSortEngine() {
                 i: lo,              // left scan pointer
                 j: hi               // right scan pointer (scanRight will update this)
             });
-            consoleDebug();
+            //consoleDebug();
             return;
         }
 
@@ -61,7 +60,7 @@ export function makeQuickSortEngine() {
             while (i <= f.hi && a[i] < f.pivotValue) i++;
             stack.pop();
             stack.push({ type: 'scanRight', lo: f.lo, hi: f.hi, pvt: f.pvt, pivotValue: f.pivotValue, i, j: f.j });
-            consoleDebug();
+            //consoleDebug();
             return;
         }
 
@@ -76,9 +75,9 @@ export function makeQuickSortEngine() {
             } else {
                 // partition finished → recurse on subranges
                 if (f.lo < j) stack.push({ type: 'pivot', lo: f.lo, hi: j });
-                if (i < f.hi) stack.push({ type: 'pivot', lo: i,     hi: f.hi });
+                if (i < f.hi) stack.push({ type: 'pivot', lo: i, hi: f.hi });
             }
-            consoleDebug();
+            //consoleDebug();
             return;
         }
 
@@ -92,7 +91,7 @@ export function makeQuickSortEngine() {
                 i: f.i + 1,         // moved past the swapped-in value
                 j: f.j - 1
             });
-            consoleDebug();
+            //consoleDebug();
             return;
         }
     }

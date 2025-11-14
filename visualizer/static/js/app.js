@@ -127,6 +127,7 @@ async function play(){
   // animate until done
   while (!engine.isDone() && state.isRunning) {
     engine.step();
+    console.log(engine.getState());
     render(engine.getState());
     await sleep(1000);
   }
@@ -212,37 +213,32 @@ function render(state){
 
     case "pivot":
       highlights = (_, idx) => {
-        const pivot = state.pvt;
 
-        if (pivot) return "purple";             // active pivot
+        if (idx === pvt) return "purple";             // active pivot
         return "teal";
       };
     break;
 
     case "scanLeft":
       highlights = (_, idx) => {
-        const ptrLeft = state.i;
 
-        if (ptrLeft) return "green";             // active pivot
+        if (idx === i) return "green";             // active pivot
         return "teal";
       };
     break;
 
     case "scanRight ":
       highlights = (_, idx) => {
-        const ptrRight = state.j;
 
-        if (ptrRight) return "green";             // active pivot
+        if (idk === j) return "green";             // active pivot
         return "teal";
       };
     break;
 
     case "swap":
       highlights = (_, idx) => {
-        const i = state.i;
-        const j = state.j;
 
-        if (pivot) return "orange";             // active pivot
+        if (idx === (i || j)) return "orange";             // active pivot
         return "teal";
       };
     break;
